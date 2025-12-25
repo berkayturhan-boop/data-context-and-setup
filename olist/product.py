@@ -141,5 +141,21 @@ class Product:
         - `product_weight_g`: mean or median weight per category
         - ...
         '''
-        pass  # YOUR CODE HERE
+    def get_product_cat(self, agg="mean"):
+        '''
+        Returns a DataFrame with `category` as index, and aggregating various properties for each category in columns such as:
+        - `quantity`: total number of products sold for this category.
+        - `product_weight_g`: mean or median weight per category
+        - ...
+        '''
+        # 1. Ürün bazlı tüm veriyi çek (zaten yazdığımız fonksiyonu kullanıyoruz)
+        products = self.get_training_data()
 
+        # 2. String (yazı) olan sütunları çıkaralım ki "ortalama" alırken hata vermesin.
+        # 'category' sütunu groupby işleminde index olacağı için onu düşürmüyoruz,
+        # ama 'product_id' matematiksel işleme giremez.
+        columns_to_drop = ['product_id']
+        
+        # 3. Kategoriye göre grupla ve istenen işlemi (agg="mean" veya "median") uygula
+        # numeric_only=True parametresi, sadece sayısal sütunları işleme sokar (Pandas hatalarını önler)
+        return products.drop(columns=columns_to_drop).groupby('category').agg(agg)
