@@ -141,8 +141,28 @@ class Seller:
         Returns a DataFrame with:
         'seller_id', 'share_of_five_stars', 'share_of_one_stars', 'review_score'
         """
-
-        pass  # YOUR CODE HERE
+        # 1. Order sınıfından sipariş bazlı yorumları çek
+        orders_reviews = self.order.get_review_score()
+        
+        # 2. Hangi siparişin hangi satıcıya ait olduğunu bul (order_items tablosu)
+        # Sadece order_id ve seller_id'yi alıyoruz, duplicate'leri siliyoruz
+        orders_sellers = self.data['order_items'][['order_id', 'seller_id']].drop_duplicates()
+        
+        # 3. Bu iki tabloyu birleştir
+        # Artık her satırda: Seller ID - Order ID - Review Score var
+        df = orders_sellers.merge(orders_reviews, on='order_id')
+        
+        # 4. Satıcı bazında grupla ve ortalamaları al
+        result = df.groupby('seller_id', as_index=False).agg({
+            'dim_is_one_star': 'mean',
+            'dim_is_five_star': 'mean',
+            'review_score': 'mean'
+        })
+        
+        # 5. Sütun isimlerini docstring'e uygun hale getir
+        result.columns = ['seller_id', 'share_of_one_stars', 'share_of_five_stars', 'review_score']
+        
+        return result
 
     def get_training_data(self):
         """
